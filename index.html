@@ -1,0 +1,972 @@
+<!DOCTYPE html>
+<html lang="vi">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Chúc mừng 20/10 — Thiệp tương tác</title>
+
+    <!-- Bootstrap 5 CSS -->
+    <link
+      href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css"
+      rel="stylesheet"
+    />
+
+    <!-- Optional icons -->
+    <link
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"
+      rel="stylesheet"
+    />
+
+    <style>
+      /* ---------- THEME ---------- */
+      :root {
+        --bg1: #fff0f6;
+        --bg2: #ffe6f0;
+        --accent: #ff2d95;
+        --muted: #6c757d;
+      }
+      html,
+      body {
+        height: 100%;
+      }
+      body {
+        background: linear-gradient(180deg, var(--bg1) 0%, var(--bg2) 100%);
+        font-family: "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+        overflow-x: hidden;
+      }
+
+      /* Header */
+      .hero {
+        min-height: 90vh;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        position: relative;
+        text-align: center;
+        padding: 3rem 1rem;
+      }
+      .hero .card {
+        backdrop-filter: blur(6px) saturate(120%);
+        background: rgba(255, 255, 255, 0.6);
+        border: none;
+        max-width: 1000px;
+        padding: 2rem;
+        border-radius: 1rem;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.12);
+      }
+      h1.title {
+        font-size: clamp(1.6rem, 3.6vw, 3rem);
+        color: #b8005a;
+        letter-spacing: 0.6px;
+        margin-bottom: 0.3rem;
+      }
+      p.lead-sub {
+        color: var(--muted);
+        margin-bottom: 1rem;
+      }
+
+      /* Floating hearts */
+      .floating-heart {
+        position: fixed;
+        pointer-events: none;
+        z-index: 5;
+        font-size: 20px;
+        animation: floatUp 6s linear infinite;
+        opacity: 0;
+      }
+      @keyframes floatUp {
+        0% {
+          transform: translateY(0) scale(0.8);
+          opacity: 1;
+        }
+        100% {
+          transform: translateY(-120vh) scale(1.8);
+          opacity: 0;
+        }
+      }
+
+      /* confetti-like petals */
+      .petal {
+        position: absolute;
+        width: 18px;
+        height: 18px;
+        background: radial-gradient(circle at 30% 30%, #fff, #ffb6d9 40%);
+        transform: rotate(25deg);
+        border-radius: 4px;
+        opacity: 0.9;
+        filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.08));
+      }
+
+      /* audio control bar */
+      .audio-bar {
+        background: rgba(255, 255, 255, 0.8);
+        border-radius: 12px;
+        padding: 0.4rem 0.6rem;
+        display: flex;
+        gap: 0.6rem;
+        align-items: center;
+        box-shadow: 0 6px 18px rgba(0, 0, 0, 0.08);
+      }
+
+      /* slideshow */
+      .slide-img {
+        height: 320px;
+        object-fit: cover;
+        width: 100%;
+        border-radius: 0.5rem;
+      }
+
+      /* wish overlay */
+      .wish-box {
+        display: none;
+        background: rgba(255, 255, 255, 0.95);
+        color: #c2185b;
+        font-size: 1.4rem;
+        font-weight: 700;
+        text-align: center;
+        padding: 28px 34px;
+        border-radius: 16px;
+        position: fixed;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%) scale(1);
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.18);
+        z-index: 2000;
+        animation: wishFadeIn 360ms ease-out;
+        max-width: 90%;
+        line-height: 1.4;
+      }
+      .wish-box small {
+        display: block;
+        margin-top: 8px;
+        font-weight: 400;
+        color: var(--muted);
+        font-size: 0.9rem;
+      }
+      @keyframes wishFadeIn {
+        from {
+          opacity: 0;
+          transform: translate(-50%, -52%) scale(0.95);
+        }
+        to {
+          opacity: 1;
+          transform: translate(-50%, -50%) scale(1);
+        }
+      }
+
+      /* footer */
+      footer {
+        padding: 2rem 1rem;
+        text-align: center;
+        color: var(--muted);
+      }
+
+      /* small responsive tweaks */
+      @media (max-width: 768px) {
+        .hero {
+          padding-top: 4rem;
+          padding-bottom: 2rem;
+        }
+        .wish-box {
+          font-size: 1.1rem;
+          padding: 18px;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <!-- Floating top controls -->
+    <div
+      class="position-fixed top-0 start-50 translate-middle-x mt-3"
+      style="z-index: 1050"
+    >
+      <div class="d-flex gap-2 align-items-center">
+        <div
+          class="audio-bar"
+          id="audioBar"
+          role="region"
+          aria-label="Audio controls"
+        >
+          <button
+            class="btn btn-sm btn-outline-primary"
+            id="playBtn"
+            title="Play / Pause"
+          >
+            <i class="fa-solid fa-play" id="playIcon"></i>
+          </button>
+          <button
+            class="btn btn-sm btn-outline-secondary"
+            id="muteBtn"
+            title="Mute / Unmute"
+          >
+            <i class="fa-solid fa-volume-high" id="muteIcon"></i>
+          </button>
+          <label class="mb-0" style="font-size: 0.9rem">Âm lượng</label>
+          <input
+            id="volumeRange"
+            type="range"
+            min="0"
+            max="1"
+            step="0.01"
+            value="0.6"
+            style="width: 140px"
+          />
+          <div class="vr"></div>
+          <div class="d-flex align-items-center gap-2">
+            <select
+              id="langSelect"
+              class="form-select form-select-sm"
+              style="width: 140px"
+              aria-label="Chọn ngôn ngữ"
+            >
+              <option value="vi" selected>Tiếng Việt</option>
+              <option value="en">English</option>
+            </select>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- MAIN HERO -->
+    <main class="hero">
+      <div class="card text-center">
+        <div class="card-body position-relative">
+          <h1 class="title" id="titleText">
+            💐 Chúc mừng Ngày Phụ Nữ Việt Nam 20/10 💖
+          </h1>
+          <p class="lead lead-sub" id="subtitle">
+            Chúc bạn luôn xinh đẹp, hạnh phúc, và tràn đầy yêu thương.
+          </p>
+
+          <!-- IMAGE + SLIDESHOW -->
+          <div class="row g-3 align-items-center">
+            <div class="col-md-7">
+              <div
+                id="mainCarousel"
+                class="carousel slide"
+                data-bs-ride="carousel"
+                data-bs-interval="4200"
+              >
+                <div class="carousel-inner">
+                  <!-- replace src with your images in assets/images/... -->
+                  <div class="carousel-item active">
+                    <img
+                      src="assets/img/anh8.jpg"
+                      class="d-block w-100 slide-img"
+                      alt="ảnh 1"
+                      loading="lazy"
+                    />
+                  </div>
+                  <div class="carousel-item">
+                    <img
+                      src="assets/img/anh6.jpg"
+                      class="d-block w-100 slide-img"
+                      alt="ảnh 2"
+                      loading="lazy"
+                    />
+                  </div>
+                  <div class="carousel-item">
+                    <img
+                      src="assets/img/anh7.jpg"
+                      class="d-block w-100 slide-img"
+                      alt="ảnh 3"
+                      loading="lazy"
+                    />
+                  </div>
+                </div>
+                <button
+                  class="carousel-control-prev"
+                  type="button"
+                  data-bs-target="#mainCarousel"
+                  data-bs-slide="prev"
+                >
+                  <span
+                    class="carousel-control-prev-icon"
+                    aria-hidden="true"
+                  ></span>
+                  <span class="visually-hidden">Trước</span>
+                </button>
+                <button
+                  class="carousel-control-next"
+                  type="button"
+                  data-bs-target="#mainCarousel"
+                  data-bs-slide="next"
+                >
+                  <span
+                    class="carousel-control-next-icon"
+                    aria-hidden="true"
+                  ></span>
+                  <span class="visually-hidden">Sau</span>
+                </button>
+              </div>
+
+              <div class="d-flex justify-content-between mt-2">
+                <small class="text-muted"
+                  >Thiệp được thiết kế với 💗 bởi _DVH_
+                </small>
+                <!-- removed downloadAllBtn per request -->
+              </div>
+            </div>
+
+            <!-- RIGHT: MESSAGE + CTA -->
+            <div class="col-md-5">
+              <div class="text-start">
+                <h4 id="msgTitle">Gửi lời yêu thương</h4>
+                <p id="msgBody">
+                  Nhấn nút để phát nhạc, xem slideshow và gửi thiệp ấm áp đến
+                  người phụ nữ bạn yêu thương.
+                </p>
+
+                <div class="d-grid gap-2">
+                  <button
+                    class="btn btn-lg btn-pink"
+                    id="openCardBtn"
+                    style="
+                      background: linear-gradient(90deg, #ff6aa6, #ff2d95);
+                      color: white;
+                    "
+                  >
+                    Mở thiệp — Xem lời chúc
+                  </button>
+
+                  <div class="d-flex gap-2">
+                    <button class="btn btn-outline-secondary" id="shareBtn">
+                      <i class="fa-solid fa-share-nodes"></i> Chia sẻ
+                    </button>
+                    <!-- nút QR (bên cạnh Chia sẻ) -->
+                    <button
+                      class="btn btn-outline-info"
+                      id="qrBtn"
+                      title="Mở QR để người khác quét"
+                    >
+                      <i class="fa-solid fa-qrcode"></i> QR
+                    </button>
+                  </div>
+                </div>
+
+                <hr />
+
+                <div>
+                  <h6>Thêm lời chúc của bạn</h6>
+                  <textarea
+                    id="personalMsg"
+                    class="form-control"
+                    rows="4"
+                    placeholder="Gõ lời chúc ở đây..."
+                  ></textarea>
+                  <div class="d-flex gap-2 mt-2">
+                    <button class="btn btn-success" id="applyMsgBtn">
+                      Áp dụng lên thiệp
+                    </button>
+                    <button class="btn btn-outline-secondary" id="clearMsgBtn">
+                      Xoá
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <!-- row -->
+        </div>
+      </div>
+    </main>
+
+    <!-- Hidden modal card kept for backwards compatibility but without send/print/download controls -->
+    <div class="modal fade" id="cardModal" tabindex="-1" aria-hidden="true">
+      <div class="modal-dialog modal-xl modal-fullscreen-sm-down">
+        <div
+          class="modal-content"
+          style="
+            background: radial-gradient(
+              circle at 10% 10%,
+              rgba(255, 255, 255, 0.98),
+              rgba(255, 240, 245, 0.8)
+            );
+          "
+        >
+          <div class="modal-header border-0">
+            <h5 class="modal-title" id="cardTitle">Thiệp 20/10</h5>
+            <button
+              type="button"
+              class="btn-close"
+              data-bs-dismiss="modal"
+              aria-label="Đóng"
+            ></button>
+          </div>
+          <div class="modal-body">
+            <div class="container">
+              <div class="row g-3">
+                <div class="col-lg-6 d-flex align-items-center">
+                  <div>
+                    <h2 id="cardGreeting">💐 Chúc mừng 20/10</h2>
+                    <p id="cardPersonal">
+                      Nhân ngày 20/10, anh muốn gửi đến em người con gái đặc
+                      biệt nhất trong tim anh những lời chúc ngọt ngào và chân
+                      thành nhất. Cảm ơn em vì đã đến bên anh, mang đến cho anh
+                      niềm vui, bình yên và hạnh phúc mỗi ngày.<br />
+                      ❤️ 🌸
+                    </p>
+                    <p class="text-muted">— Gửi từ trang thiệp của bạn</p>
+                  </div>
+                </div>
+
+                <div class="col-lg-6">
+                  <!-- decorative image area -->
+                  <div class="ratio ratio-4x3">
+                    <img
+                      id="cardImage"
+                      src="assets/img/anh5.jpg"
+                      alt="card image"
+                      class="rounded"
+                      style="object-fit: cover"
+                    />
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="modal-footer border-0">
+            <small class="text-muted"
+              >Bạn có thể chia sẻ lời chúc bằng nút "Chia sẻ".</small
+            >
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- QR Modal -->
+    <div class="modal fade" id="qrModal" tabindex="-1" aria-hidden="true">
+      <div class="modal-dialog modal-sm modal-dialog-centered">
+        <div class="modal-content text-center p-3">
+          <div class="modal-header border-0">
+            <h5 class="modal-title">Quét mã QR để mở trang</h5>
+            <button
+              type="button"
+              class="btn-close"
+              data-bs-dismiss="modal"
+              aria-label="Đóng"
+            ></button>
+          </div>
+          <div class="modal-body">
+            <img
+              id="qrImage"
+              src=""
+              alt="QR code"
+              style="width: 200px; height: 200px"
+            />
+            <p class="small text-muted mt-2" id="qrUrlText"></p>
+            <div class="d-flex justify-content-center gap-2 mt-2">
+              <a
+                id="downloadQrBtn"
+                class="btn btn-sm btn-outline-primary"
+                download="qr.png"
+                href="#"
+              >
+                <i class="fa-solid fa-download"></i> Tải QR
+              </a>
+              <button id="copyLinkBtn" class="btn btn-sm btn-outline-secondary">
+                <i class="fa-solid fa-copy"></i> Sao chép link
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Wish overlay (shown when clicking "Mở thiệp") -->
+    <div
+      id="wishBox"
+      class="wish-box"
+      role="dialog"
+      aria-modal="true"
+      aria-hidden="true"
+      tabindex="-1"
+      onclick="this.style.display='none'"
+    >
+      <div id="wishContent">
+        Chúc bạn một ngày 20/10 thật hạnh phúc, xinh đẹp và tràn đầy yêu thương!
+        💐
+      </div>
+      <small>Nhấn vào vùng này để đóng • Tự ẩn sau vài giây</small>
+    </div>
+
+    <!-- Audio element (hidden) -->
+    <audio id="bgAudio" loop preload="auto">
+      <!-- Replace this src with your music file path or URL -->
+      <source
+        src="assets/music/Rồi Ta Sẽ Ngắm Pháo Hoa Cùng Nhau.mp3"
+        type="audio/mpeg"
+      />
+      Your browser does not support the audio element.
+    </audio>
+
+    <!-- Floating download (example) -->
+    <div class="position-fixed bottom-0 end-0 p-3" style="z-index: 1030">
+      <button class="btn btn-danger btn-lg" id="surpriseBtn" title="Surprise!">
+        <i class="fa-solid fa-gift"></i> Surprise
+      </button>
+    </div>
+
+    <footer>
+      <small> </small>
+    </footer>
+
+    <!-- Bootstrap JS & dependencies -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+
+    <!-- MAIN SCRIPT -->
+    <script>
+      /* ======================
+       Utilities & Config
+       ====================== */
+      const audio = document.getElementById("bgAudio");
+      const playBtn = document.getElementById("playBtn");
+      const playIcon = document.getElementById("playIcon");
+      const muteBtn = document.getElementById("muteBtn");
+      const muteIcon = document.getElementById("muteIcon");
+      const volumeRange = document.getElementById("volumeRange");
+      const langSelect = document.getElementById("langSelect");
+      const openCardBtn = document.getElementById("openCardBtn");
+      const shareBtn = document.getElementById("shareBtn");
+      const surpriseBtn = document.getElementById("surpriseBtn");
+      const qrBtn = document.getElementById("qrBtn");
+      const qrImage = document.getElementById("qrImage");
+      const qrUrlText = document.getElementById("qrUrlText");
+      const downloadQrBtn = document.getElementById("downloadQrBtn");
+      const copyLinkBtn = document.getElementById("copyLinkBtn");
+
+      // Simple i18n texts (vi/en)
+      const TEXTS = {
+        vi: {
+          title: "💐 Chúc mừng Ngày Phụ Nữ Việt Nam 20/10 💖",
+          subtitle:
+            "Chúc bạn luôn xinh đẹp, hạnh phúc, và tràn đầy yêu thương.",
+          openCard: "Mở thiệp — Xem lời chúc",
+          share: "Chia sẻ",
+          msgTitle: "Gửi lời yêu thương",
+          msgBody:
+            "Nhấn nút để phát nhạc, xem slideshow và gửi thiệp ấm áp đến người phụ nữ bạn yêu thương.",
+          applyOk: "Lời chúc đã được áp dụng lên thiệp!",
+        },
+        en: {
+          title: "💐 Happy Vietnamese Women's Day 20/10 💖",
+          subtitle: "Wishing you beauty, happiness, and all the love.",
+          openCard: "Open Card — See Wishes",
+          share: "Share",
+          msgTitle: "Send your love",
+          msgBody:
+            "Click to play music, view slideshow and send a warm card to someone special.",
+          applyOk: "Message applied to the card!",
+        },
+      };
+
+      function setLang(lang = "vi") {
+        const t = TEXTS[lang] || TEXTS.vi;
+        document.getElementById("titleText").textContent = t.title;
+        document.getElementById("subtitle").textContent = t.subtitle;
+        openCardBtn.textContent = t.openCard;
+        shareBtn.textContent = " " + t.share;
+        document.getElementById("msgTitle").textContent = t.msgTitle;
+        document.getElementById("msgBody").textContent = t.msgBody;
+      }
+
+      // Init language
+      setLang("vi");
+
+      langSelect.addEventListener("change", (e) => {
+        setLang(e.target.value);
+      });
+
+      /* ======================
+       Audio controls + autoplay attempt
+       ====================== */
+      audio.volume = parseFloat(volumeRange.value);
+
+      function updatePlayIcon() {
+        if (audio.paused) playIcon.className = "fa-solid fa-play";
+        else playIcon.className = "fa-solid fa-pause";
+      }
+      function updateMuteIcon() {
+        if (audio.muted || audio.volume === 0)
+          muteIcon.className = "fa-solid fa-volume-xmark";
+        else muteIcon.className = "fa-solid fa-volume-high";
+      }
+
+      playBtn.addEventListener("click", async () => {
+        try {
+          if (audio.paused) await audio.play();
+          else audio.pause();
+        } catch (err) {
+          console.warn("Play prevented:", err);
+        }
+        updatePlayIcon();
+      });
+
+      muteBtn.addEventListener("click", () => {
+        audio.muted = !audio.muted;
+        updateMuteIcon();
+      });
+
+      volumeRange.addEventListener("input", (e) => {
+        audio.volume = parseFloat(e.target.value);
+        if (audio.volume === 0) audio.muted = true;
+        else audio.muted = false;
+        updateMuteIcon();
+      });
+
+      audio.addEventListener("play", updatePlayIcon);
+      audio.addEventListener("pause", updatePlayIcon);
+
+      // Try autoplay on load (many browsers will block if no user gesture)
+      document.addEventListener("DOMContentLoaded", async () => {
+        try {
+          // attempt to play muted first then unmute
+          audio.muted = true;
+          await audio.play();
+          // smoothly unmute after short delay if allowed
+          setTimeout(() => {
+            audio.muted = false;
+            updateMuteIcon();
+          }, 800);
+          updatePlayIcon();
+        } catch (err) {
+          // Autoplay blocked — leave controls for user
+          console.info(
+            "Autoplay blocked; user interaction required to play audio."
+          );
+          audio.pause();
+          audio.currentTime = 0;
+          audio.muted = false;
+          updatePlayIcon();
+        }
+
+        // spawn decorative floating hearts occasionally
+        startFloatingHearts();
+        spawnPetals();
+      });
+
+      /* ======================
+       Open card -> show wish overlay
+       ====================== */
+      const wishBox = document.getElementById("wishBox");
+      const wishContent = document.getElementById("wishContent");
+
+      openCardBtn.addEventListener("click", () => {
+        // Use the personal message if provided, otherwise the modal card text
+        const userMsg = document.getElementById("personalMsg").value.trim();
+        const cardPersonal = document
+          .getElementById("cardPersonal")
+          .textContent.trim();
+        wishContent.textContent =
+          userMsg ||
+          cardPersonal ||
+          "Chúc bạn một ngày 20/10 thật hạnh phúc, xinh đẹp và tràn đầy yêu thương! 💐";
+        wishBox.style.display = "block";
+        wishBox.setAttribute("aria-hidden", "false");
+
+        // optional confetti/heart burst when opening
+        burstHearts(18);
+
+        // auto-hide after 8s
+        setTimeout(() => {
+          wishBox.style.display = "none";
+          wishBox.setAttribute("aria-hidden", "true");
+        }, 8000);
+      });
+
+      // clicking wishBox closes it (attribute inline onclick also present)
+      wishBox.addEventListener("click", () => {
+        wishBox.style.display = "none";
+        wishBox.setAttribute("aria-hidden", "true");
+      });
+
+      /* ======================
+       Apply message button
+       ====================== */
+      document.getElementById("applyMsgBtn").addEventListener("click", () => {
+        const txt = document.getElementById("personalMsg").value.trim();
+        if (txt) {
+          document.getElementById("cardPersonal").textContent = txt;
+          showToast(TEXTS[langSelect.value].applyOk || "Applied!");
+        } else {
+          showToast("Vui lòng nhập lời chúc trước khi áp dụng.");
+        }
+      });
+      document.getElementById("clearMsgBtn").addEventListener("click", () => {
+        document.getElementById("personalMsg").value = "";
+      });
+
+      /* ======================
+       Share handler (Web Share + social fallback + copy)
+       ====================== */
+      async function shareCard() {
+        const text =
+          document.getElementById("cardPersonal").textContent.trim() ||
+          document.getElementById("personalMsg").value.trim() ||
+          "Chúc mừng 20/10 🌸";
+        const title =
+          document.getElementById("cardTitle")?.textContent || "Thiệp 20/10";
+        const url = window.location.href;
+
+        // 1) try Web Share API
+        if (navigator.share) {
+          try {
+            await navigator.share({ title, text, url });
+            showToast("Mở menu chia sẻ của thiết bị — chọn app để gửi.");
+            return;
+          } catch (err) {
+            console.info("Web Share failed / cancelled", err);
+          }
+        }
+
+        // 2) social fallback: open small window with options
+        const encodedUrl = encodeURIComponent(url);
+        const encodedText = encodeURIComponent(text + " — " + url);
+
+        const shareOptions = [
+          {
+            name: "Facebook",
+            url: `https://www.facebook.com/sharer/sharer.php?u=${encodedUrl}`,
+          },
+          {
+            name: "Twitter",
+            url: `https://twitter.com/intent/tweet?text=${encodedText}`,
+          },
+          {
+            name: "WhatsApp",
+            url: `https://api.whatsapp.com/send?text=${encodedText}`,
+          },
+        ];
+
+        let popupHtml =
+          '<div style="font-family: Arial, sans-serif; padding: 12px;">';
+        popupHtml += '<h3 style="margin-top:0">Chia sẻ qua:</h3>';
+        shareOptions.forEach((opt) => {
+          popupHtml += `<p style="margin:6px 0"><a href="${opt.url}" target="_blank" rel="noopener">${opt.name}</a></p>`;
+        });
+        popupHtml += `<button id="copyShareBtn" style="padding:8px 10px; margin-top:8px;">Sao chép lời chúc & link</button>`;
+        popupHtml += "</div>";
+
+        const w = window.open("", "shareWindow", "width=360,height=280");
+        if (w) {
+          w.document.body.innerHTML = popupHtml;
+          const btn = w.document.getElementById("copyShareBtn");
+          if (btn) {
+            btn.addEventListener("click", async () => {
+              try {
+                await navigator.clipboard.writeText(text + "\n" + url);
+                alert(
+                  "Đã sao chép! Dán (Ctrl+V) vào Zalo, Messenger hoặc Facebook để gửi."
+                );
+              } catch (e) {
+                alert("Không thể sao chép tự động. Vui lòng copy thủ công.");
+              }
+            });
+          }
+          return;
+        }
+
+        // 3) popup blocked: try copy directly
+        try {
+          await navigator.clipboard.writeText(text + "\n" + url);
+          showToast("Lời chúc & link đã được sao chép. Dán để gửi.");
+        } catch (e) {
+          const manual = prompt(
+            "Sao chép thủ công nội dung sau (Ctrl+C):",
+            text + "\n" + url
+          );
+          if (manual !== null) showToast("Sẵn sàng để dán.");
+        }
+      }
+      shareBtn.addEventListener("click", shareCard);
+
+      /* ======================
+       QR Code (no external lib, uses public API)
+       ====================== */
+      function makeQrUrl(data, size = 400) {
+        return `https://api.qrserver.com/v1/create-qr-code/?size=${size}x${size}&data=${encodeURIComponent(
+          data
+        )}`;
+      }
+
+      async function openQrModal() {
+        const url = window.location.href;
+        const qrSrc = makeQrUrl(url, 400);
+        qrImage.src = qrSrc;
+        qrImage.alt = "QR cho " + url;
+        qrUrlText.textContent = url;
+        // set download href (points to generated PNG)
+        if (downloadQrBtn) downloadQrBtn.href = qrSrc;
+        // show bootstrap modal
+        const el = document.getElementById("qrModal");
+        if (el) {
+          const modal = new bootstrap.Modal(el, { backdrop: true });
+          modal.show();
+        }
+      }
+
+      if (qrBtn) {
+        qrBtn.addEventListener("click", (e) => {
+          openQrModal();
+        });
+      }
+
+      if (copyLinkBtn) {
+        copyLinkBtn.addEventListener("click", async () => {
+          try {
+            await navigator.clipboard.writeText(window.location.href);
+            showToast("Link đã được sao chép vào clipboard.");
+          } catch (err) {
+            prompt("Sao chép thủ công (Ctrl+C):", window.location.href);
+          }
+        });
+      }
+
+      /* ======================
+       Visual flourishes: hearts, petals, confetti
+       ====================== */
+      function startFloatingHearts() {
+        setInterval(() => {
+          const h = document.createElement("div");
+          h.className = "floating-heart";
+          h.style.left = Math.random() * 100 + "vw";
+          h.style.fontSize = 12 + Math.random() * 30 + "px";
+          h.style.animationDuration = 6 + Math.random() * 6 + "s";
+          h.style.opacity = 1;
+          h.innerHTML = ["💖", "🌸", "💐", "💕"][Math.floor(Math.random() * 4)];
+          document.body.appendChild(h);
+          setTimeout(() => {
+            h.remove();
+          }, 12000);
+        }, 300);
+      }
+
+      // spawn petals across hero for decoration (once)
+      function spawnPetals() {
+        const hero = document.querySelector(".hero");
+        for (let i = 0; i < 14; i++) {
+          const p = document.createElement("div");
+          p.className = "petal";
+          p.style.left = Math.random() * 90 + "%";
+          p.style.top = Math.random() * 80 + "%";
+          p.style.transform = `rotate(${Math.random() * 360}deg)`;
+          p.style.opacity = 0.9;
+          p.style.animation = `petalFall ${
+            8 + Math.random() * 8
+          }s linear infinite`;
+          hero.appendChild(p);
+          // random remove after a while
+          setTimeout(() => p.remove(), 25000);
+        }
+        // add keyframe dynamically for petalFall
+        const style = document.createElement("style");
+        style.textContent = `
+        @keyframes petalFall {
+          0%{ transform: translateY(0) rotate(0deg); opacity:0.9; }
+          100%{ transform: translateY(110vh) rotate(360deg); opacity:0; }
+        }`;
+        document.head.appendChild(style);
+      }
+
+      /* ======================
+       Surprise button: quick confetti + heart burst
+       ====================== */
+      surpriseBtn.addEventListener("click", () => {
+        burstHearts(30);
+        showToast("Surprise! Chúc một ngày thật vui ❤️");
+      });
+
+      function burstHearts(n = 20) {
+        for (let i = 0; i < n; i++) {
+          const el = document.createElement("div");
+          el.className = "floating-heart";
+          el.style.left = 50 + (Math.random() - 0.5) * 40 + "vw";
+          el.style.top = 50 + (Math.random() - 0.5) * 40 + "vh";
+          el.style.fontSize = 10 + Math.random() * 40 + "px";
+          el.style.animationDuration = 2 + Math.random() * 3 + "s";
+          el.innerHTML = ["💖", "🌸", "💕", "🌺"][
+            Math.floor(Math.random() * 4)
+          ];
+          document.body.appendChild(el);
+          setTimeout(() => el.remove(), 5000);
+        }
+      }
+
+      /* ======================
+       Tiny toast function (bootstrap toast-less)
+       ====================== */
+      function showToast(message) {
+        const t = document.createElement("div");
+        t.className = "position-fixed end-0 p-3";
+        t.style.zIndex = 2000;
+        const inner = document.createElement("div");
+        inner.className =
+          "toast show align-items-center text-bg-primary border-0";
+        inner.role = "alert";
+        inner.ariaLive = "assertive";
+        inner.ariaAtomic = "true";
+        inner.style.minWidth = "220px";
+        inner.innerHTML = `<div class="d-flex">
+        <div class="toast-body">${message}</div>
+        <button type="button" class="btn-close btn-close-white me-2 m-auto" aria-label="Close"></button>
+      </div>`;
+        t.appendChild(inner);
+        document.body.appendChild(t);
+        inner
+          .querySelector(".btn-close")
+          .addEventListener("click", () => t.remove());
+        setTimeout(() => t.remove(), 4500);
+      }
+
+      /* ======================
+       Accessibility: keyboard play/pause (space), open card (Enter)
+       ====================== */
+      document.addEventListener("keydown", (e) => {
+        if (e.code === "Space") {
+          e.preventDefault();
+          if (audio.paused) audio.play().catch(() => {});
+          else audio.pause();
+          updatePlayIcon();
+        } else if (e.key === "Enter") {
+          // open wish overlay
+          openCardBtn.click();
+        }
+      });
+
+      /* ======================
+       Small progressive enhancement: replace broken images with placeholder
+       ====================== */
+      document.addEventListener(
+        "error",
+        (e) => {
+          const el = e.target;
+          if (el.tagName === "IMG") {
+            el.src =
+              "data:image/svg+xml;charset=UTF-8," +
+              encodeURIComponent(
+                `<svg xmlns="http://www.w3.org/2000/svg" width="800" height="500" viewBox="0 0 800 500">
+            <rect width="100%" height="100%" fill="#ffeef6"/>
+            <text x="50%" y="50%" dominant-baseline="middle" text-anchor="middle" fill="#c2185b" font-size="22">Ảnh không tìm thấy</text>
+          </svg>`
+              );
+          }
+        },
+        true
+      );
+
+      /* ======================
+       Small: update card image when slide changes
+       ====================== */
+      const carousel = document.getElementById("mainCarousel");
+      if (carousel) {
+        carousel.addEventListener("slid.bs.carousel", (ev) => {
+          const active = ev.to; // index
+          const imgs = carousel.querySelectorAll(".carousel-item img");
+          const activeImg = imgs[active] || imgs[0];
+          const cardImage = document.getElementById("cardImage");
+          if (activeImg && cardImage) cardImage.src = activeImg.src;
+        });
+      }
+    </script>
+  </body>
+</html>
